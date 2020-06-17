@@ -77,13 +77,16 @@ func main() {
 	// read the commandline
 	word := getInput()
 	// Execute the query
-	query := fmt.Sprintf("SELECT * FROM dictionary WHERE word=\"%s\"", word)
-
-	results, err := db.Query(query)
+	// query := fmt.Sprintf("SELECT * FROM dictionary WHERE word=\"%s\"", word)
+	query := "SELECT * FROM dictionary WHERE word=?"
+	results, err := db.Query(query, word)
 	if err != nil {
 		log.Fatalf("Cannot execute query: %v\n", err)
 	}
-	for results.Next() {
+	defer results.Close()
+	if !results.Next() {
+		fmt.Println("No definition found, change your word")
+	} else {
 		record := dict{}
 		// for each row, scan the result into our tag composite object
 		err = results.Scan(&record.id, &record.word, &record.explain1, &record.explain2, &record.explain3, &record.explain4, &record.explain5, &record.explain6)
@@ -92,5 +95,4 @@ func main() {
 		}
 		outPut(record)
 	}
-
 }
